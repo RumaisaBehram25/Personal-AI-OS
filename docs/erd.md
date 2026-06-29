@@ -35,7 +35,7 @@ erDiagram
     messages ||--o{ exec_logs : "produced by"
 
     users {
-        uuid id PK_FK "= auth.users.id"
+        uuid id PK "FK = auth.users.id"
         text email
         text full_name
         text avatar_url
@@ -45,7 +45,7 @@ erDiagram
     }
     prefs {
         uuid id PK
-        uuid user_id FK_UQ
+        uuid user_id FK "unique"
         text timezone
         text currency
         jsonb preferences
