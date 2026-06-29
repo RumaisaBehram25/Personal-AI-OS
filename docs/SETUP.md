@@ -89,15 +89,18 @@ supabase db reset
 This runs every file in `supabase/migrations/` in order:
 
 ```
-0001_profiles.sql
-0002_conversations.sql
-0003_messages.sql
-0004_tasks.sql
-0005_notes.sql
-0006_reminders.sql
-0007_expenses.sql
-0008_user_preferences.sql
-0009_rls_policies.sql
+0001_foundation.sql
+0002_users.sql
+0003_prefs.sql
+0004_conversations.sql
+0005_messages.sql
+0006_tasks.sql
+0007_notes.sql
+0008_reminders.sql
+0009_expenses.sql
+0010_calendar_conn.sql
+0011_exec_logs.sql
+0012_grants.sql
 ```
 
 ---

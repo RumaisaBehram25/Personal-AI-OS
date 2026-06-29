@@ -119,10 +119,10 @@ npx supabase db push
 ```
 
 Or apply migrations manually via the Supabase SQL editor in order:
-`0001_foundation` → `0002_users` → `0003_prefs` → ... → `0011_exec_logs`
+`0001_foundation.sql` → `0002_users.sql` → `0003_prefs.sql` → ... → `0011_exec_logs.sql` → `0012_grants.sql`
 
 > Each file is self-contained (table + indexes + triggers + RLS). Run them in
-> numeric order. `0001_foundation` enables the `pgcrypto` and `vector` extensions.
+> numeric order. `0001_foundation.sql` enables the `pgcrypto` and `vector` extensions.
 
 ### 4. Enable Google OAuth (optional)
 

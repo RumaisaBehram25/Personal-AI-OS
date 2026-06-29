@@ -166,20 +166,20 @@ registry.ts
 
 All tables live in the `public` schema. Migrations run in numeric order from `supabase/migrations/`. Each migration file is self-contained — it creates the table, adds indexes, attaches triggers, and enables RLS in one file.
 
-| # | Migration | Table | Notes |
-|---|---|---|---|
-| 0001 | `foundation` | — | Enables `pgcrypto` and `vector` extensions |
-| 0002 | `users` | `users` | Extends `auth.users` — profile, role |
-| 0003 | `prefs` | `prefs` | Timezone, currency, JSONB preferences |
-| 0004 | `conversations` | `conversations` | Chat session containers |
-| 0005 | `messages` | `messages` | Chat messages + `embedding vector` (pgvector) |
-| 0006 | `tasks` | `tasks` | Status, priority, due date |
-| 0007 | `notes` | `notes` | Freeform notes with tags |
-| 0008 | `reminders` | `reminders` | Scheduled reminders with sent tracking |
-| 0009 | `expenses` | `expenses` | Amount, category, date |
-| 0010 | `calendar_conn` | `calendar_conn` | Google Calendar OAuth tokens (server-only) |
-| 0011 | `exec_logs` | `exec_logs` | AI tool call audit log |
-| 0012 | `grants` | — | Final RLS grants and permissions |
+| Migration File | Table | Notes |
+|---|---|---|
+| `0001_foundation.sql` | — | Enables `pgcrypto` and `vector` extensions |
+| `0002_users.sql` | `users` | Extends `auth.users` — profile, role |
+| `0003_prefs.sql` | `prefs` | Timezone, currency, JSONB preferences |
+| `0004_conversations.sql` | `conversations` | Chat session containers |
+| `0005_messages.sql` | `messages` | Chat messages + `embedding vector` (pgvector) |
+| `0006_tasks.sql` | `tasks` | Status, priority, due date |
+| `0007_notes.sql` | `notes` | Freeform notes with tags |
+| `0008_reminders.sql` | `reminders` | Scheduled reminders with sent tracking |
+| `0009_expenses.sql` | `expenses` | Amount, category, date |
+| `0010_calendar_conn.sql` | `calendar_conn` | Google Calendar OAuth tokens (server-only) |
+| `0011_exec_logs.sql` | `exec_logs` | AI tool call audit log |
+| `0012_grants.sql` | — | Final RLS grants and permissions |
 
 ### pgvector — Semantic Memory
 
