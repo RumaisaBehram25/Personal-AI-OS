@@ -44,6 +44,8 @@ src/
 │   ├── conversations/ # Chat interface, message history, AI tools
 │   ├── memory/        # User preferences + AI context retrieval
 │   ├── dashboard/     # Aggregates data across modules (read-only)
+│   ├── notifications/ # In-app and email notification delivery
+│   ├── calendar/      # Google Calendar OAuth + sync (Phase 2)
 │   ├── admin/         # Platform metrics (service-role only)
 │   └── registry.ts    # Assembles all AI tools for the chat endpoint
 │
