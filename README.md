@@ -62,23 +62,27 @@ src/
 └── config/            # Zod-validated env vars, app constants
 
 supabase/
-└── migrations/        # One SQL file per entity (profiles → conversations → ... → RLS)
+└── migrations/        # One SQL file per entity (foundation → users → ... → exec_logs)
 ```
 
 ## Database Schema
 
 | Table | Purpose |
 |---|---|
-| `profiles` | Extends `auth.users` — display name, role (`user` / `admin`) |
+| `users` | Extends `auth.users` — display name, avatar, role (`user` / `admin`) |
+| `prefs` | Timezone, currency, extensible JSONB preferences (user memory) |
 | `conversations` | Chat session container per user |
-| `messages` | Individual chat messages with role + optional tool metadata |
-| `tasks` | User tasks with status and priority |
-| `notes` | Freeform notes with optional tags |
-| `reminders` | Scheduled reminders with sent tracking |
-| `expenses` | Expense entries with amount, category, date |
-| `user_preferences` | Timezone, currency, extensible JSONB preferences |
+| `messages` | Chat messages with role, tool-call metadata, and pgvector `embedding` |
+| `tasks` | User tasks with status, due date, completion |
+| `notes` | Freeform notes captured via chat or directly |
+| `reminders` | Scheduled reminders (in-app/email), optional task link |
+| `expenses` | Expense entries with amount, category, date, source |
+| `calendar_conn` | Connected calendar OAuth accounts (Google, Phase 2) — server-only |
+| `exec_logs` | AI tool/function-call audit log (debug, reliability, admin metrics) |
 
 Row Level Security is enabled on all tables. Users can only access their own rows.
+`messages.embedding` uses **pgvector** for semantic memory. `calendar_conn` (OAuth
+tokens) and `exec_logs` writes are server-only via the Supabase service role key.
 
 ## Getting Started
 
@@ -113,7 +117,10 @@ npx supabase db push
 ```
 
 Or apply migrations manually via the Supabase SQL editor in order:
-`0001_profiles` → `0002_conversations` → ... → `0009_rls_policies`
+`0001_foundation` → `0002_users` → `0003_prefs` → ... → `0011_exec_logs`
+
+> Each file is self-contained (table + indexes + triggers + RLS). Run them in
+> numeric order. `0001_foundation` enables the `pgcrypto` and `vector` extensions.
 
 ### 4. Enable Google OAuth (optional)
 
