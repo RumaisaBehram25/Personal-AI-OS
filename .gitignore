@@ -9,8 +9,6 @@ out/
 build/
 
 # env
-.env
-.env.local
 .env.*.local
 
 # supabase
@@ -27,3 +25,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+config.bat
