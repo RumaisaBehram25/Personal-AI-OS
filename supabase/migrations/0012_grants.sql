@@ -1,9 +1,3 @@
--- =====================================================================
--- 0012_grants
--- Grant table privileges to Supabase API roles. RLS still gates which
--- ROWS each role can touch; these grants just give table-level access.
--- service_role bypasses RLS entirely.
--- =====================================================================
 grant usage on schema public to anon, authenticated, service_role;
 
 grant all privileges on all tables    in schema public to anon, authenticated, service_role;

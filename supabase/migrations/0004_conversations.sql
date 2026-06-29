@@ -1,8 +1,3 @@
--- =====================================================================
--- 0004_conversations
--- A chat session container per user.
--- =====================================================================
-
 create table public.conversations (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid not null references auth.users(id) on delete cascade,
@@ -17,7 +12,6 @@ create trigger trg_conversations_updated
   before update on public.conversations
   for each row execute function public.set_updated_at();
 
--- ---- RLS: own rows only ----
 alter table public.conversations enable row level security;
 
 create policy "conversations_select_own" on public.conversations

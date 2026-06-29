@@ -1,8 +1,3 @@
--- =====================================================================
--- 0006_tasks
--- User to-dos, editable via chat tools or the manual UI.
--- =====================================================================
-
 create table public.tasks (
   id            uuid primary key default gen_random_uuid(),
   user_id       uuid not null references auth.users(id) on delete cascade,
@@ -21,7 +16,6 @@ create trigger trg_tasks_updated
   before update on public.tasks
   for each row execute function public.set_updated_at();
 
--- ---- RLS: own rows only ----
 alter table public.tasks enable row level security;
 
 create policy "tasks_select_own" on public.tasks

@@ -1,8 +1,3 @@
--- =====================================================================
--- 0007_notes
--- Freeform notes captured via chat or directly.
--- =====================================================================
-
 create table public.notes (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid not null references auth.users(id) on delete cascade,
@@ -18,7 +13,6 @@ create trigger trg_notes_updated
   before update on public.notes
   for each row execute function public.set_updated_at();
 
--- ---- RLS: own rows only ----
 alter table public.notes enable row level security;
 
 create policy "notes_select_own" on public.notes
