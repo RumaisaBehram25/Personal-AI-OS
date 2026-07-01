@@ -1,6 +1,8 @@
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { env } from '@/config/env'
+
+type CookieToSet = { name: string; value: string; options: CookieOptions }
 
 // Auth pages that a signed-in user should be bounced away from.
 const AUTH_PATHS = ['/sign-in', '/sign-up']
@@ -31,7 +33,7 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: CookieToSet[]) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           )
