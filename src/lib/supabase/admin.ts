@@ -1,22 +1,21 @@
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 import { env } from '@/config/env'
-import type { Database } from '@/types/database'
 
-/**
- * Privileged Supabase client using the service-role key.
- *
- * WARNING: This BYPASSES Row Level Security. Use ONLY in trusted server-side
- * code (e.g. admin metrics). NEVER import this into a Client Component — the
- * service-role key must never reach the browser.
- */
+// This client uses the service role key and bypasses RLS.
+// Only import it from server-side code (Server Actions, Route Handlers,
+// Server Components). Never import it into a Client Component.
+
 export function createAdminClient() {
-  if (!env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not configured.')
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!serviceRoleKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set')
   }
 
-  return createSupabaseClient<Database>(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  )
+  return createClient(env.NEXT_PUBLIC_SUPABASE_URL, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
 }

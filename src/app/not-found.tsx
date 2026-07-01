@@ -1,14 +1,16 @@
 import Link from 'next/link'
-import { ROUTES } from '@/config/constants'
+import { buttonVariants } from '@/components/ui/button'
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-3 p-6 text-center">
-      <h1 className="text-3xl font-semibold">404</h1>
-      <p className="text-muted-foreground">This page could not be found.</p>
-      <Link href={ROUTES.home} className="text-sm underline">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-6 text-center">
+      <h2 className="text-2xl font-semibold">Page not found</h2>
+      <p className="text-sm text-muted-foreground">
+        The page you are looking for does not exist.
+      </p>
+      <Link href="/" className={buttonVariants()}>
         Go home
       </Link>
-    </main>
+    </div>
   )
 }

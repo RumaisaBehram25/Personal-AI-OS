@@ -4,12 +4,14 @@ import { Providers } from '@/components/providers'
 
 export const metadata: Metadata = {
   title: 'HypoOS',
-  description: 'A personal AI operating system for managing your daily life.',
+  description: 'Your personal AI operating system.',
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen antialiased">

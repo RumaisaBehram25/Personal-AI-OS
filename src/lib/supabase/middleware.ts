@@ -1,22 +1,29 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { env } from '@/config/env'
-import type { Database } from '@/types/database'
 
-/**
- * Refreshes the Supabase auth session on every request and guards protected
- * routes. Called from the root `middleware.ts`. Unauthenticated users hitting a
- * protected route are redirected to /sign-in.
- */
+// Auth pages that a signed-in user should be bounced away from.
+const AUTH_PATHS = ['/sign-in', '/sign-up']
+
+// Paths reachable without an active session.
+const PUBLIC_PATHS = [
+  '/',
+  '/sign-in',
+  '/sign-up',
+  '/forgot-password',
+  '/reset-password',
+]
+
+function isPublicPath(pathname: string) {
+  if (PUBLIC_PATHS.includes(pathname)) return true
+  if (pathname.startsWith('/auth')) return true
+  return false
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
-  // If Supabase isn't configured yet, don't block requests (keeps build/dev usable).
-  if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return supabaseResponse
-  }
-
-  const supabase = createServerClient<Database>(
+  const supabase = createServerClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
@@ -24,8 +31,10 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          )
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options),
@@ -35,21 +44,21 @@ export async function updateSession(request: NextRequest) {
     },
   )
 
-  // IMPORTANT: do not run code between createServerClient and getUser().
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
-  const isPublic =
-    pathname === '/' ||
-    pathname.startsWith('/sign-in') ||
-    pathname.startsWith('/sign-up') ||
-    pathname.startsWith('/auth')
 
-  if (!user && !isPublic) {
+  if (!user && !isPublicPath(pathname)) {
     const url = request.nextUrl.clone()
     url.pathname = '/sign-in'
+    return NextResponse.redirect(url)
+  }
+
+  if (user && AUTH_PATHS.includes(pathname)) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
     return NextResponse.redirect(url)
   }
 
