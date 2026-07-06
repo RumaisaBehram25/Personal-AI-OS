@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ROUTES } from '@/config/constants'
 import Sidebar from '@/components/shared/sidebar'
 import { signOut } from '@/modules/auth/actions'
+import { isAdmin } from '@/modules/admin/service'
 
 /**
  * Layout for the authenticated app. Server-side auth guard (in addition to the
@@ -17,6 +18,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   } = await supabase.auth.getUser()
 
   if (!user) redirect(ROUTES.signIn)
+
+  const admin = await isAdmin(supabase, user.id)
 
   // Construct user data to pass to the sidebar
   const userData = {
@@ -71,7 +74,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* Shared Responsive Navigation (Sidebar / Bottom Nav) */}
-      <Sidebar user={userData} />
+      <Sidebar user={userData} isAdmin={admin} />
 
       {/* Main Content Area */}
       <main className="flex-1 min-w-0 pb-20 md:pb-0 overflow-y-auto">
