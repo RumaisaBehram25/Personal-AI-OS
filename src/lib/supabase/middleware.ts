@@ -60,7 +60,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user && AUTH_PATHS.includes(pathname)) {
     const url = request.nextUrl.clone()
-    url.pathname = '/'
+    url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
 
