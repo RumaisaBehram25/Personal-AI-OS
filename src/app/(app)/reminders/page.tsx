@@ -1,8 +1,14 @@
-export default function RemindersPage() {
-  return (
-    <div className="space-y-2">
-      <h1 className="text-2xl font-semibold">Reminders</h1>
-      <p className="text-muted-foreground text-sm">Create, view, edit and delete reminders here.</p>
-    </div>
-  )
+import { createClient } from '@/lib/supabase/server'
+import { listReminders } from '@/modules/reminders/service'
+import RemindersView from '@/modules/reminders/components/reminders-view'
+
+export default async function RemindersPage() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const reminders = user ? await listReminders(supabase, user.id) : []
+
+  return <RemindersView reminders={reminders} />
 }

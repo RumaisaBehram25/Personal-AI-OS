@@ -84,11 +84,13 @@ create trigger trg_auth_user_created
   for each row execute function public.handle_new_user();
 
 create table public.conversations (
-  id          uuid primary key default gen_random_uuid(),
-  user_id     uuid not null references auth.users(id) on delete cascade,
-  title       text,
-  created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now()
+  id              uuid primary key default gen_random_uuid(),
+  user_id         uuid not null references auth.users(id) on delete cascade,
+  title           text,
+  summary         text,
+  summary_through timestamptz,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
 );
 
 create index idx_conversations_user on public.conversations(user_id, updated_at desc);

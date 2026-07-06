@@ -9,6 +9,8 @@ import {
   Receipt,
   FileText,
   Bell,
+  Settings,
+  ShieldCheck,
   LogOut,
   Sparkles,
 } from 'lucide-react'
@@ -21,19 +23,28 @@ interface SidebarProps {
     name?: string | null
     avatarUrl?: string | null
   }
+  isAdmin?: boolean
 }
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/chat', label: 'Chat', icon: MessageSquare },
   { href: '/tasks', label: 'Tasks', icon: CheckSquare },
   { href: '/expenses', label: 'Expenses', icon: Receipt },
   { href: '/notes', label: 'Notes', icon: FileText },
   { href: '/reminders', label: 'Reminders', icon: Bell },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
-export default function Sidebar({ user }: SidebarProps) {
+export default function Sidebar({ user, isAdmin = false }: SidebarProps) {
   const pathname = usePathname()
+
+  const NAV_ITEMS = isAdmin
+    ? [
+        ...BASE_NAV_ITEMS,
+        { href: '/admin', label: 'Admin', icon: ShieldCheck },
+      ]
+    : BASE_NAV_ITEMS
 
   // Get user display name and initials
   const displayName = user.name || user.email?.split('@')[0] || 'User'
@@ -124,9 +135,9 @@ export default function Sidebar({ user }: SidebarProps) {
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation */}
+      {/* Mobile Bottom Navigation (limited set to fit the bar) */}
       <nav className="fixed bottom-0 left-0 right-0 h-16 border-t border-[#e2e8f0] bg-white flex md:hidden items-center justify-around z-50 px-2 py-1 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]">
-        {NAV_ITEMS.map((item) => {
+        {BASE_NAV_ITEMS.slice(0, 5).map((item) => {
           const Icon = item.icon
           const isActive = pathname.startsWith(item.href)
 

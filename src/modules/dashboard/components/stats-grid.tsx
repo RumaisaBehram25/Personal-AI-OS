@@ -1,67 +1,63 @@
-'use client'
-
 import { ListTodo, CheckCircle2, Wallet, Bell } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { formatMoney } from '@/lib/format'
 
 interface StatsGridProps {
-  isLoading?: boolean
+  pending: number
+  completedToday: number
+  total: number
+  todaySpending: number
+  weekSpending: number
+  activeReminders: number
+  currency: string
 }
 
-export default function StatsGrid({ isLoading = false }: StatsGridProps) {
+export default function StatsGrid({
+  pending,
+  completedToday,
+  total,
+  todaySpending,
+  weekSpending,
+  activeReminders,
+  currency,
+}: StatsGridProps) {
+  const completionRate =
+    total > 0 ? Math.round((completedToday / total) * 100) : 0
+
   const stats = [
     {
       title: 'Total Tasks',
-      value: '12',
-      label: '3 pending',
+      value: String(total),
+      label: `${pending} pending`,
       icon: ListTodo,
       iconColor: 'text-[#6366f1]',
       iconBg: 'bg-[#6366f1]/10',
     },
     {
       title: 'Completed Today',
-      value: '5',
-      label: '83% completion rate',
+      value: String(completedToday),
+      label: `${completionRate}% of all tasks`,
       icon: CheckCircle2,
       iconColor: 'text-[#16a34a]',
       iconBg: 'bg-[#16a34a]/10',
     },
     {
-      title: 'Money Spent Today',
-      value: '$36.00',
-      label: '$14.00 remaining budget',
+      title: 'Spent Today',
+      value: formatMoney(todaySpending, currency),
+      label: `${formatMoney(weekSpending, currency)} this week`,
       icon: Wallet,
       iconColor: 'text-[#d97706]',
       iconBg: 'bg-[#d97706]/10',
     },
     {
       title: 'Active Reminders',
-      value: '4',
-      label: 'Next in 2 hours',
+      value: String(activeReminders),
+      label: activeReminders > 0 ? 'upcoming' : 'none scheduled',
       icon: Bell,
       iconColor: 'text-[#0891b2]',
       iconBg: 'bg-[#0891b2]/10',
     },
   ]
-
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={i}
-            className="bg-white border border-[#e9eef5] rounded-lg shadow-sm p-4 md:p-5 animate-pulse"
-          >
-            <div className="flex justify-between items-start mb-3">
-              <div className="h-4 w-24 bg-slate-200 rounded" />
-              <div className="h-8 w-8 rounded-lg bg-slate-200" />
-            </div>
-            <div className="h-7 w-12 bg-slate-200 rounded mb-2" />
-            <div className="h-3 w-32 bg-slate-100 rounded" />
-          </div>
-        ))}
-      </div>
-    )
-  }
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
