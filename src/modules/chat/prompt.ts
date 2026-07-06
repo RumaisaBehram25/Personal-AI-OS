@@ -2,17 +2,53 @@ interface PromptContext {
   now: Date
   userName?: string | null
   currency?: string
+  timezone?: string
+}
+
+/** Returns the user's current UTC offset for a timezone, e.g. "+05:00". */
+function offsetFor(timeZone: string, date: Date): string {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      timeZoneName: 'longOffset',
+    }).formatToParts(date)
+    const name = parts.find((p) => p.type === 'timeZoneName')?.value ?? ''
+    const match = name.match(/([+-]\d{2}):?(\d{2})/)
+    if (match) return `${match[1]}:${match[2]}`
+    return '+00:00'
+  } catch {
+    return '+00:00'
+  }
+}
+
+function localNow(timeZone: string, date: Date): string {
+  try {
+    return new Intl.DateTimeFormat('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone,
+    }).format(date)
+  } catch {
+    return date.toISOString()
+  }
 }
 
 export function buildSystemPrompt({
   now,
   userName,
   currency = 'USD',
+  timezone = 'UTC',
 }: PromptContext): string {
+  const offset = offsetFor(timezone, now)
+
   return [
     'You are HypoOS, a friendly and concise personal assistant.',
     userName ? `You are helping ${userName}.` : '',
-    `The current date and time is ${now.toISOString()} (UTC).`,
+    `The current date and time is ${localNow(timezone, now)} in the user's timezone (${timezone}, UTC offset ${offset}).`,
     `The user's default currency is ${currency}.`,
     '',
     'You can manage the user\'s tasks, expenses, reminders and notes using the provided tools:',
@@ -27,8 +63,19 @@ export function buildSystemPrompt({
     '- When they ask about themselves, their settings, or their currency, call getUserContext.',
     '- When they ask for a summary of their day or "what does my day look like", call getDailySummary.',
     '',
-    'Rules:',
-    '- Resolve relative dates like "tomorrow" or "next Friday" into ISO 8601 timestamps before calling a tool.',
+    'Time and timezone rules (very important):',
+    `- The user always speaks in their local timezone (${timezone}). Interpret any time they mention (e.g. "10 AM", "tomorrow at 3 PM") as local time in ${timezone}.`,
+    `- When you pass a date/time to a tool, output a full ISO 8601 timestamp that INCLUDES the user's current UTC offset (${offset}). For example, 10 AM would be 2026-07-08T10:00:00${offset}. Never send a bare time or assume UTC.`,
+    `- Resolve relative dates like "tomorrow" or "next Friday" relative to the current local date shown above, then apply the ${offset} offset.`,
+    `- When you tell the user a time, always state it in their local timezone (${timezone}), never in UTC.`,
+    '',
+    'Missing information (very important):',
+    '- Never invent, guess, or silently assume a date or time. Only use a time the user actually gave you.',
+    '- If the user asks to create a task or meeting WITHOUT a time, create it with no due date (omit dueAt). Do not make one up. You may mention they can add a time later.',
+    '- If the user asks for a reminder WITHOUT a time, do NOT create it yet — a reminder needs a time to fire, so ask them what time first, then create it once they answer.',
+    '- If the user gives a day but no time (e.g. "on Friday"), ask what time they want rather than assuming one.',
+    '',
+    'Other rules:',
     '- Pick the best expense category from: food, transport, shopping, bills, entertainment, health, other.',
     '- After performing an action, confirm what you did in one short, friendly sentence (mention the reminder if one was created).',
     '- If a tool returns an error, briefly apologize and explain; do not invent success.',

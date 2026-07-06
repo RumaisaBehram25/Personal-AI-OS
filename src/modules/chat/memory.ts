@@ -21,6 +21,23 @@ interface RawMessage {
   created_at: string
 }
 
+/** Formats an ISO timestamp in the user's timezone for model-readable context. */
+function formatLocal(iso: string | null, timeZone: string): string {
+  if (!iso) return 'no time set'
+  try {
+    return new Intl.DateTimeFormat('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone,
+    }).format(new Date(iso))
+  } catch {
+    return iso
+  }
+}
+
 /**
  * Builds the compact "current state" block injected right before the newest
  * user message: open tasks (with ids so the model can act on "the first one"),
@@ -39,13 +56,18 @@ export async function buildActiveStateBlock(
     getPrefs(supabase, userId),
   ])
 
-  const lines: string[] = ['Current state (for your reference):']
+  const tz = prefs.timezone || 'UTC'
+  const lines: string[] = [
+    `Current state (for your reference; times shown in the user's timezone ${tz}):`,
+  ]
 
   if (tasks.length) {
     lines.push('Pending tasks:')
     for (const t of tasks) {
       lines.push(
-        `- [${t.id}] ${t.title}${t.due_at ? ` (due: ${t.due_at})` : ''}`,
+        `- [${t.id}] ${t.title}${
+          t.due_at ? ` (due: ${formatLocal(t.due_at, tz)})` : ''
+        }`,
       )
     }
   } else {
@@ -55,13 +77,13 @@ export async function buildActiveStateBlock(
   if (reminders.length) {
     lines.push('Upcoming reminders:')
     for (const r of reminders) {
-      lines.push(`- ${r.message} (at: ${r.remind_at})`)
+      lines.push(`- ${r.message} (at: ${formatLocal(r.remind_at, tz)})`)
     }
   } else {
     lines.push('Upcoming reminders: none')
   }
 
-  lines.push(`Currency: ${prefs.currency}. Timezone: ${prefs.timezone}.`)
+  lines.push(`Currency: ${prefs.currency}. Timezone: ${tz}.`)
 
   return lines.join('\n')
 }

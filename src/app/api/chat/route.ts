@@ -58,7 +58,12 @@ export async function POST(req: Request) {
   ])
 
   const systemParts = [
-    buildSystemPrompt({ now: new Date(), userName, currency: prefs.currency }),
+    buildSystemPrompt({
+      now: new Date(),
+      userName,
+      currency: prefs.currency,
+      timezone: prefs.timezone,
+    }),
   ]
   if (summary) {
     systemParts.push(

@@ -6,6 +6,8 @@ import { ROUTES } from '@/config/constants'
 import Sidebar from '@/components/shared/sidebar'
 import { signOut } from '@/modules/auth/actions'
 import { isAdmin } from '@/modules/admin/service'
+import { getPrefs } from '@/modules/prefs/service'
+import TimezoneSync from '@/modules/prefs/components/timezone-sync'
 
 /**
  * Layout for the authenticated app. Server-side auth guard (in addition to the
@@ -19,7 +21,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect(ROUTES.signIn)
 
-  const admin = await isAdmin(supabase, user.id)
+  const [admin, prefs] = await Promise.all([
+    isAdmin(supabase, user.id),
+    getPrefs(supabase, user.id),
+  ])
 
   // Construct user data to pass to the sidebar
   const userData = {
@@ -39,6 +44,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row bg-[#f1f5f9]">
+      <TimezoneSync
+        serverTimezone={prefs.timezone}
+        userSet={Boolean(prefs.preferences?.timezoneSetByUser)}
+      />
       {/* Mobile Top Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-[#e2e8f0] px-4 h-14 flex items-center justify-between md:hidden shrink-0">
         <Link href="/dashboard" className="flex items-center gap-2">

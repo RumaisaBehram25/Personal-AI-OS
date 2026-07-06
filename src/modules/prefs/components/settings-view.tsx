@@ -35,7 +35,7 @@ export default function SettingsView({
     e.preventDefault()
     startTransition(async () => {
       try {
-        await updatePrefsAction({ currency, timezone })
+        await updatePrefsAction({ currency, timezone }, true)
         toast.success('Preferences saved')
       } catch {
         toast.error('Could not save preferences')
