@@ -38,6 +38,16 @@ export async function createTaskAction(input: {
   revalidatePath('/dashboard')
 }
 
+export async function updateTaskAction(
+  id: string,
+  input: { title?: string; dueAt?: string | null },
+) {
+  const { supabase, userId } = await requireUser()
+  await service.updateTask(supabase, userId, id, input)
+  revalidatePath('/tasks')
+  revalidatePath('/dashboard')
+}
+
 export async function completeTaskAction(id: string) {
   const { supabase, userId } = await requireUser()
   await service.completeTask(supabase, userId, id)

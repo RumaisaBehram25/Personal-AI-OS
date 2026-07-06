@@ -23,6 +23,7 @@ export function buildSystemPrompt({
     '- When they ask what they need to do, call listTasks; for reminders call listReminders; for notes call listNotes.',
     '- When they ask about spending, call listExpenses or summarizeSpending.',
     '- When they want to change an existing task (rename, reschedule, mark done), call updateTask (call listTasks first if you need the id).',
+    '- When they want to change an existing reminder (reword or reschedule it), call updateReminder (call listReminders first if you need the id).',
     '- When they ask about themselves, their settings, or their currency, call getUserContext.',
     '- When they ask for a summary of their day or "what does my day look like", call getDailySummary.',
     '',

@@ -18,6 +18,12 @@ export interface CreateReminderInput {
   channel?: ReminderChannel
 }
 
+export interface UpdateReminderInput {
+  message?: string
+  remindAt?: string
+  channel?: ReminderChannel
+}
+
 export interface ListRemindersFilters {
   upcomingOnly?: boolean
   limit?: number

@@ -1,7 +1,15 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Plus, Check, Trash2, Loader2, CalendarClock } from 'lucide-react'
+import {
+  Plus,
+  Check,
+  Trash2,
+  Loader2,
+  CalendarClock,
+  Pencil,
+  X,
+} from 'lucide-react'
 import {
   format,
   isValid,
@@ -15,6 +23,7 @@ import { toast } from 'sonner'
 import type { Task } from '../types'
 import {
   createTaskAction,
+  updateTaskAction,
   completeTaskAction,
   reopenTaskAction,
   deleteTaskAction,
@@ -24,6 +33,12 @@ function formatDue(due: string | null): string | null {
   if (!due) return null
   const d = parseISO(due)
   return isValid(d) ? format(d, 'MMM d, h:mm a') : null
+}
+
+function toLocalInput(due: string | null): string {
+  if (!due) return ''
+  const d = parseISO(due)
+  return isValid(d) ? format(d, "yyyy-MM-dd'T'HH:mm") : ''
 }
 
 type Bucket = 'Overdue' | 'Today' | 'Tomorrow' | 'This week' | 'Later' | 'No date'
@@ -61,6 +76,37 @@ export default function TasksView({ tasks }: { tasks: Task[] }) {
   const [title, setTitle] = useState('')
   const [dueAt, setDueAt] = useState('')
   const [isPending, startTransition] = useTransition()
+
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editDueAt, setEditDueAt] = useState('')
+
+  const startEdit = (task: Task) => {
+    setEditingId(task.id)
+    setEditTitle(task.title)
+    setEditDueAt(toLocalInput(task.due_at))
+  }
+
+  const cancelEdit = () => setEditingId(null)
+
+  const handleSaveEdit = (id: string) => {
+    if (!editTitle.trim()) {
+      toast.error('Title cannot be empty')
+      return
+    }
+    startTransition(async () => {
+      try {
+        await updateTaskAction(id, {
+          title: editTitle.trim(),
+          dueAt: editDueAt ? new Date(editDueAt).toISOString() : null,
+        })
+        setEditingId(null)
+        toast.success('Task updated')
+      } catch {
+        toast.error('Could not update task')
+      }
+    })
+  }
 
   const pending = tasks.filter((t) => t.status === 'pending')
   const completed = tasks.filter((t) => t.status === 'completed')
@@ -106,48 +152,104 @@ export default function TasksView({ tasks }: { tasks: Task[] }) {
       }),
   })).filter((g) => g.items.length > 0)
 
-  const renderPendingRow = (task: Task) => (
-    <div
-      key={task.id}
-      className="flex items-center gap-3 rounded-xl border border-[#e9eef5] bg-white p-3.5 shadow-sm"
-    >
-      <button
-        onClick={() =>
-          runAction(() => completeTaskAction(task.id), 'Could not complete task')
-        }
-        disabled={isPending}
-        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-[#cbd5e1] text-transparent transition-colors hover:border-[#6366f1] hover:text-[#6366f1]"
-        title="Mark complete"
+  const renderPendingRow = (task: Task) => {
+    if (editingId === task.id) {
+      return (
+        <div
+          key={task.id}
+          className="flex flex-col gap-2 rounded-xl border border-[#6366f1]/40 bg-white p-3.5 shadow-sm sm:flex-row"
+        >
+          <input
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            className="flex-1 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-sm outline-none focus:border-[#6366f1] focus:bg-white"
+          />
+          <input
+            type="datetime-local"
+            value={editDueAt}
+            onChange={(e) => setEditDueAt(e.target.value)}
+            className="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-sm text-[#64748b] outline-none focus:border-[#6366f1] focus:bg-white"
+          />
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => handleSaveEdit(task.id)}
+              disabled={isPending}
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50"
+              title="Save"
+            >
+              {isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4" />
+              )}
+            </button>
+            <button
+              onClick={cancelEdit}
+              disabled={isPending}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#e2e8f0] text-[#64748b] hover:bg-[#f1f5f9]"
+              title="Cancel"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div
+        key={task.id}
+        className="flex items-center gap-3 rounded-xl border border-[#e9eef5] bg-white p-3.5 shadow-sm"
       >
-        <Check className="h-3 w-3" />
-      </button>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-[#0f172a]">
-          {task.title}
-        </p>
-        {formatDue(task.due_at) && (
-          <p
-            className={`mt-0.5 flex items-center gap-1 text-xs ${
-              BUCKET_TONE[bucketOf(task)]
-            }`}
-          >
-            <CalendarClock className="h-3 w-3" />
-            {formatDue(task.due_at)}
+        <button
+          onClick={() =>
+            runAction(
+              () => completeTaskAction(task.id),
+              'Could not complete task',
+            )
+          }
+          disabled={isPending}
+          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-[#cbd5e1] text-transparent transition-colors hover:border-[#6366f1] hover:text-[#6366f1]"
+          title="Mark complete"
+        >
+          <Check className="h-3 w-3" />
+        </button>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-[#0f172a]">
+            {task.title}
           </p>
-        )}
+          {formatDue(task.due_at) && (
+            <p
+              className={`mt-0.5 flex items-center gap-1 text-xs ${
+                BUCKET_TONE[bucketOf(task)]
+              }`}
+            >
+              <CalendarClock className="h-3 w-3" />
+              {formatDue(task.due_at)}
+            </p>
+          )}
+        </div>
+        <button
+          onClick={() => startEdit(task)}
+          disabled={isPending}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-[#94a3b8] transition-colors hover:bg-[#6366f1]/10 hover:text-[#6366f1]"
+          title="Edit"
+        >
+          <Pencil className="h-4 w-4" />
+        </button>
+        <button
+          onClick={() =>
+            runAction(() => deleteTaskAction(task.id), 'Could not delete task')
+          }
+          disabled={isPending}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-[#94a3b8] transition-colors hover:bg-red-50 hover:text-red-600"
+          title="Delete"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
       </div>
-      <button
-        onClick={() =>
-          runAction(() => deleteTaskAction(task.id), 'Could not delete task')
-        }
-        disabled={isPending}
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-[#94a3b8] transition-colors hover:bg-red-50 hover:text-red-600"
-        title="Delete"
-      >
-        <Trash2 className="h-4 w-4" />
-      </button>
-    </div>
-  )
+    )
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f1f5f9]">

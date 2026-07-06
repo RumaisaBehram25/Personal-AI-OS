@@ -25,6 +25,16 @@ export async function createReminderAction(input: {
   revalidatePath('/dashboard')
 }
 
+export async function updateReminderAction(
+  id: string,
+  input: { message?: string; remindAt?: string; channel?: ReminderChannel },
+) {
+  const { supabase, userId } = await requireUser()
+  await service.updateReminder(supabase, userId, id, input)
+  revalidatePath('/reminders')
+  revalidatePath('/dashboard')
+}
+
 export async function deleteReminderAction(id: string) {
   const { supabase, userId } = await requireUser()
   await service.deleteReminder(supabase, userId, id)

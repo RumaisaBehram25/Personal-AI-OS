@@ -38,6 +38,41 @@ export function reminderTools(ctx: ToolCtx) {
         }),
     }),
 
+    updateReminder: tool({
+      description:
+        'Update an existing reminder: change its message, time, or channel. If you do not know the reminder id, call listReminders first.',
+      parameters: z.object({
+        id: z.string().describe('The id of the reminder to update'),
+        message: z.string().optional().describe('New reminder message'),
+        remindAt: z
+          .string()
+          .optional()
+          .describe('New time as an ISO 8601 timestamp'),
+        channel: z.enum(['in_app', 'email']).optional(),
+      }),
+      execute: async (args) =>
+        runTool(ctx, 'updateReminder', args, async () => {
+          const reminder = await reminderService.updateReminder(
+            ctx.supabase,
+            ctx.userId,
+            args.id,
+            {
+              message: args.message,
+              remindAt: args.remindAt,
+              channel: args.channel,
+            },
+          )
+          return {
+            ok: true,
+            reminder: {
+              id: reminder.id,
+              message: reminder.message,
+              remind_at: reminder.remind_at,
+            },
+          }
+        }),
+    }),
+
     listReminders: tool({
       description:
         'List the user\'s reminders. Use to answer "what reminders do I have?".',

@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type {
   Reminder,
   CreateReminderInput,
+  UpdateReminderInput,
   ListRemindersFilters,
 } from './types'
 
@@ -45,6 +46,28 @@ export async function createReminder(
       remind_at: input.remindAt,
       channel: input.channel ?? 'in_app',
     })
+    .select('*')
+    .single()
+  if (error) throw new Error(error.message)
+  return data as Reminder
+}
+
+export async function updateReminder(
+  supabase: SupabaseClient,
+  userId: string,
+  id: string,
+  input: UpdateReminderInput,
+): Promise<Reminder> {
+  const patch: Record<string, unknown> = {}
+  if (input.message !== undefined) patch.message = input.message
+  if (input.remindAt !== undefined) patch.remind_at = input.remindAt
+  if (input.channel !== undefined) patch.channel = input.channel
+
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update(patch)
+    .eq('user_id', userId)
+    .eq('id', id)
     .select('*')
     .single()
   if (error) throw new Error(error.message)
