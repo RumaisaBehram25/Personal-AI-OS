@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Loader2, Save, Settings as SettingsIcon } from 'lucide-react'
+import { Loader2, Save, Settings as SettingsIcon, LocateFixed } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Prefs } from '../types'
 import { updatePrefsAction } from '../actions'
@@ -31,6 +31,10 @@ export default function SettingsView({
   const [timezone, setTimezone] = useState(prefs.timezone)
   const [isPending, startTransition] = useTransition()
 
+  // Ensure the currently-saved timezone is always selectable, even if it isn't
+  // one of the presets (e.g. a browser-detected zone).
+  const timezoneOptions = Array.from(new Set([...TIMEZONES, timezone]))
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault()
     startTransition(async () => {
@@ -39,6 +43,29 @@ export default function SettingsView({
         toast.success('Preferences saved')
       } catch {
         toast.error('Could not save preferences')
+      }
+    })
+  }
+
+  const handleUseBrowser = () => {
+    let browserTz = ''
+    try {
+      browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    } catch {
+      browserTz = ''
+    }
+    if (!browserTz) {
+      toast.error('Could not detect your browser timezone')
+      return
+    }
+    setTimezone(browserTz)
+    startTransition(async () => {
+      try {
+        // markTimezoneManual=false so this counts as browser-driven, not a lock.
+        await updatePrefsAction({ currency, timezone: browserTz }, false)
+        toast.success(`Using your browser timezone (${browserTz})`)
+      } catch {
+        toast.error('Could not update timezone')
       }
     })
   }
@@ -98,15 +125,26 @@ export default function SettingsView({
               onChange={(e) => setTimezone(e.target.value)}
               className="w-full rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-sm outline-none focus:border-[#6366f1] focus:bg-white"
             >
-              {TIMEZONES.map((t) => (
+              {timezoneOptions.map((t) => (
                 <option key={t} value={t}>
                   {t}
                 </option>
               ))}
             </select>
-            <p className="text-xs text-[#94a3b8]">
-              Affects how &ldquo;today&rdquo; and due dates are shown.
-            </p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs text-[#94a3b8]">
+                Affects how &ldquo;today&rdquo; and due dates are shown.
+              </p>
+              <button
+                type="button"
+                onClick={handleUseBrowser}
+                disabled={isPending}
+                className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[#6366f1] transition-colors hover:bg-[#6366f1]/10 disabled:opacity-50"
+              >
+                <LocateFixed className="h-3.5 w-3.5" />
+                Detect from browser
+              </button>
+            </div>
           </div>
 
           <button

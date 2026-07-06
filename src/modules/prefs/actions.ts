@@ -22,9 +22,15 @@ export async function updatePrefsAction(
 
   const patch: UpdatePrefsInput = { ...input }
 
-  if (markTimezoneManual && input.timezone !== undefined) {
+  // Keep the "was this chosen explicitly?" flag in sync with intent:
+  // - Settings save  -> markTimezoneManual=true  (locks in the choice)
+  // - Browser detect -> markTimezoneManual=false (allows auto behavior)
+  if (input.timezone !== undefined) {
     const current = await service.getPrefs(supabase, user.id)
-    patch.preferences = { ...current.preferences, timezoneSetByUser: true }
+    patch.preferences = {
+      ...current.preferences,
+      timezoneSetByUser: markTimezoneManual,
+    }
   }
 
   await service.upsertPrefs(supabase, user.id, patch)
