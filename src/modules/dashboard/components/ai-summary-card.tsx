@@ -75,7 +75,7 @@ export default function AiSummaryCard({ isLoading = false }: AiSummaryCardProps)
           Good morning! Here is your daily overview. You have{' '}
           <span className="text-[#6366f1] font-semibold underline decoration-[#6366f1]/30">5 pending tasks</span> today, with{' '}
           <span className="text-[#dc2626] font-semibold bg-[#dc2626]/10 px-1.5 py-0.5 rounded">2 High Priority</span> items.
-          Your spending is well within limits — you logged{' '}
+          Your spending is well within limits. You logged{' '}
           <span className="text-[#16a34a] font-semibold bg-[#16a34a]/10 px-1.5 py-0.5 rounded">$36.00</span> today, leaving you with{' '}
           <span className="text-[#0891b2] font-semibold">$14.00</span> in your daily budget.
         </p>
