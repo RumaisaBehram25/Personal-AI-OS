@@ -6,6 +6,7 @@ export interface StoredMessage {
   id: string
   role: 'user' | 'assistant'
   content: string
+  createdAt: string
 }
 
 /**
@@ -63,6 +64,7 @@ export interface ConversationSummary {
   id: string
   title: string | null
   updated_at: string
+  preview: string | null
 }
 
 export async function listConversations(
@@ -70,14 +72,40 @@ export async function listConversations(
   userId: string,
   limit = 50,
 ): Promise<ConversationSummary[]> {
-  const { data, error } = await supabase
+  const { data: convos, error } = await supabase
     .from('conversations')
     .select('id, title, updated_at')
     .eq('user_id', userId)
     .order('updated_at', { ascending: false })
     .limit(limit)
   if (error) throw new Error(error.message)
-  return (data ?? []) as ConversationSummary[]
+
+  const ids = (convos ?? []).map((c) => c.id as string)
+  const previewByConvo = new Map<string, string>()
+
+  if (ids.length > 0) {
+    const { data: msgs, error: msgError } = await supabase
+      .from('messages')
+      .select('conversation_id, content, created_at')
+      .in('conversation_id', ids)
+      .in('role', ['user', 'assistant'])
+      .order('created_at', { ascending: false })
+    if (msgError) throw new Error(msgError.message)
+
+    for (const m of msgs ?? []) {
+      const cid = m.conversation_id as string
+      if (!previewByConvo.has(cid)) {
+        previewByConvo.set(cid, (m.content as string | null) ?? '')
+      }
+    }
+  }
+
+  return (convos ?? []).map((c) => ({
+    id: c.id as string,
+    title: c.title as string | null,
+    updated_at: c.updated_at as string,
+    preview: previewByConvo.get(c.id as string) ?? null,
+  }))
 }
 
 export async function deleteConversation(
@@ -114,7 +142,7 @@ export async function getConversationMessages(
 ): Promise<StoredMessage[]> {
   const { data, error } = await supabase
     .from('messages')
-    .select('id, role, content')
+    .select('id, role, content, created_at')
     .eq('conversation_id', conversationId)
     .in('role', ['user', 'assistant'])
     .order('created_at', { ascending: true })
@@ -124,5 +152,6 @@ export async function getConversationMessages(
     id: m.id as string,
     role: m.role as 'user' | 'assistant',
     content: (m.content as string | null) ?? '',
+    createdAt: m.created_at as string,
   }))
 }
