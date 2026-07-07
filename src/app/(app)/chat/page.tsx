@@ -2,7 +2,6 @@ import type { Message } from '@ai-sdk/react'
 import { createClient } from '@/lib/supabase/server'
 import { getInitials } from '@/lib/utils'
 import {
-  getLatestConversationId,
   getConversationMessages,
   listConversations,
 } from '@/modules/chat/service'
@@ -27,13 +26,9 @@ export default async function ChatPage({
   if (user) {
     conversations = await listConversations(supabase, user.id)
 
-    if (params.new) {
-      selectedId = null
-    } else if (params.c) {
-      selectedId = params.c
-    } else {
-      selectedId = await getLatestConversationId(supabase, user.id)
-    }
+    // Default to a fresh chat. A past conversation only opens when the user
+    // explicitly selects it from the history sidebar (?c=<id>).
+    selectedId = params.c ?? null
 
     if (selectedId) {
       const stored = await getConversationMessages(supabase, selectedId)
