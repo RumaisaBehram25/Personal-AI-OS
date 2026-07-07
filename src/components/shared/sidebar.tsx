@@ -100,17 +100,17 @@ export default function Sidebar({ user, isAdmin = false }: SidebarProps) {
           </nav>
         </div>
 
-        {/* User profile & Sign Out */}
-        <div className="pt-4 border-t border-[#e2e8f0]">
-          <div className="flex items-center gap-3 px-3 py-2 mb-3">
+        {/* User profile & Sign Out (side by side) */}
+        <div className="flex items-center gap-2 pt-4 border-t border-[#e2e8f0]">
+          <div className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2">
             {user.avatarUrl ? (
               <img
                 src={user.avatarUrl}
                 alt={displayName}
-                className="h-9 w-9 rounded-full object-cover border border-[#e2e8f0]"
+                className="h-9 w-9 shrink-0 rounded-full object-cover border border-[#e2e8f0]"
               />
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#6366f1]/10 text-[#6366f1] text-sm font-semibold border border-[#6366f1]/20">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#6366f1]/10 text-[#6366f1] text-sm font-semibold border border-[#6366f1]/20">
                 {initials}
               </div>
             )}
@@ -123,13 +123,14 @@ export default function Sidebar({ user, isAdmin = false }: SidebarProps) {
               </span>
             </div>
           </div>
-          <form action={signOut} className="w-full">
+          <form action={signOut} className="shrink-0">
             <button
               type="submit"
-              className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
+              title="Sign Out"
+              aria-label="Sign Out"
+              className="flex h-9 w-9 items-center justify-center rounded-md text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
             >
               <LogOut className="h-[18px] w-[18px]" />
-              <span>Sign Out</span>
             </button>
           </form>
         </div>
