@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { LoginForm } from '@/modules/auth/components/login-form'
-// Google sign-in is disabled for now; re-enable when OAuth is configured.
-// import { GoogleSignInButton } from '@/modules/auth/components/google-sign-in-button'
+import { GoogleSignInButton } from '@/modules/auth/components/google-sign-in-button'
 
 export default function SignInPage() {
   return (
@@ -15,7 +14,6 @@ export default function SignInPage() {
 
       <LoginForm />
 
-      {/* Google sign-in is disabled for now; re-enable when OAuth is configured.
       <div className="relative my-6">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />
@@ -26,7 +24,6 @@ export default function SignInPage() {
       </div>
 
       <GoogleSignInButton />
-      */}
 
       <p className="mt-8 text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{' '}
